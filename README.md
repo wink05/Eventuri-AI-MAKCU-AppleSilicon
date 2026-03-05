@@ -1,141 +1,108 @@
-# EVENTURI-AI for MAKCU
+# EVENTURI-AI for MAKCU (Apple Silicon & macOS Edition)
 
-The ultimate AI aimbot and detection GUI for Windows, supporting YOLOv8–v12 models and a range of USB serial devices.
-Made for the MAKCU community, with custom class selection for multiple games and super-smooth, modern UI.
+The ultimate AI aimbot and detection GUI, now fully optimized for **Apple Silicon (M1, M2, M3)** and Windows. This version features native **MPS (Metal Performance Shaders)** acceleration for high-speed AI detection on Mac, while maintaining full support for YOLOv8–v12 models.
+
+Made for the MAKCU community, with custom class selection for multiple games and a super-smooth, modern UI.
 
 ---
-## Disclamer
+## ⚠️ Disclaimer
 This program is intended to be used as a 2pc setup.
 I am not responsible for any account bans, penalties, or any other consequences that may result from using this program.
 Use it at your own risk and be aware of the potential implications.
 
-## Discord
-Join Discord for support
-https://discord.gg/BZnZeTjN38
-Join Makcu Discord for Makcu Support
-https://discord.gg/wHqqw5eWV5
-## Features
-
-Supports YOLOv8–v12 (PyTorch .pt, ONNX .onnx, TensorRT .engine)
-
-Device support out-of-the-box for:
-- MAKCU (1A86:55D3)
-- CH343 (1A86:5523)
-- CH340 (1A86:7523)
-- CH347 (1A86:5740)
-- CP2102 (10C4:EA60)
-
-Custom class selection for different games (target what matters)
-
-Fast aimbot with multiple modes: Normal, Bezier, Silent, Smooth/WindMouse
-
-Profile system: save, load, and reset configs
-
-Built with CustomTkinter for a polished, dark, responsive GUI
-
-DirectML and CUDA 12.6 support (choose the best for your GPU)
-
-Visual feedback for device connection, FPS, and AI status
+## 💬 Discord
+- [Join Discord for general support](https://discord.gg/BZnZeTjN38)
+- [Join Makcu Discord for Makcu Hardware Support](https://discord.gg/wHqqw5eWV5)
 
 ---
 
-## Installation
+## ✨ Features (macOS & Apple Silicon)
 
-NOTE: CUDA support is only for NVIDIA GPUs, and only CUDA 12.6 is supported at this time. If you’re on AMD or Intel GPU, use DirectML mode.
-
----
-
-1. Clone the repo
-
-git clone https://github.com/MAKCUAI/Eventuri-AI-MAKCU-v2
-cd Eventuri-AI-MAKCU-v2
-
----
-
-2. Setup for NVIDIA (CUDA 12.6 only)
-
-Download and install CUDA 12.6:
-NVIDIA CUDA 12.6 Download: https://developer.download.nvidia.com/compute/cuda/12.6.0/local_installers/cuda_12.6.0_560.76_windows.exe
-
-Run the CUDA installer and make sure everything is installed properly.
-
-In this folder, run:
-```install_setup_cuda.bat```
-
-When done, start the app:
-```run_eventuri_ai.bat```
+- **Native Apple Silicon Support:** Optimized for M1/M2/M3 chips using **MPS (Metal Performance Shaders)** for GPU-accelerated inference.
+- **Modern Tcl/Tk 9.0:** Built-in compatibility fixes for macOS windowing to prevent startup crashes.
+- **Model Support:** Supports YOLOv8–v12 (PyTorch `.pt` and `.onnx` recommended for Mac; `.engine` for Windows/NVIDIA).
+- **Device Support:** Works with standard USB serial devices:
+  - MAKCU (1A86:55D3)
+  - CH343 (1A86:5523)
+  - CH340 (1A86:7523)
+  - CH347 (1A86:5740)
+  - CP2102 (10C4:EA60)
+- **Fast Aim Modes:** Normal, Bezier, Silent, and the advanced **WindMouse Smooth Aim**.
+- **Polished GUI:** Built with CustomTkinter for a responsive, high-tech aesthetic.
 
 ---
 
-3. Setup for DirectML (AMD/Intel/NVIDIA)
+## 🚀 Installation & Setup
 
-(No special driver install required.)
+### 🍎 For macOS (Apple Silicon M1/M2/M3)
 
-In this folder, run:
-```install_setup_directml.bat```
+1. **Install Homebrew** (if you haven't already):
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
 
-When done, start the app:
-```run_eventuri_ai.bat```
+2. **Clone the repo**:
+   ```bash
+   git clone https://github.com/wink05/Eventuri-AI-MAKCU-AppleSilicon.git
+   cd Eventuri-AI-MAKCU-AppleSilicon
+   ```
 
-DirectML is easiest to install and works with most GPUs, but is typically 5–10% slower than CUDA.
+3. **Run the macOS Setup Script**:
+   This will install Python 3.12, Tcl/Tk 9.0, and all necessary dependencies.
+   ```bash
+   chmod +x setup_macos.sh run_macos.sh
+   ./setup_macos.sh
+   ```
 
----
-
-## Usage
-
-Connect your device (see supported list above).
-
-Start the app with one of the .bat launchers.
-
-Select your AI model (.pt, .onnx, .engine) from the dropdown.
-
-Configure detection/aim settings, select your classes/game targets.
-
-Press START AIMBOT, change sensitivity to your in-game sens, hold your activation key, and you’re set.
-
----
-
-## Supported Devices
-
-| VID:PID     | Name    |
-|-------------|---------|
-| 1A86:55D3   | MAKCU   |
-| 1A86:5523   | CH343   |
-| 1A86:7523   | CH340   |
-| 1A86:5740   | CH347   |
-| 10C4:EA60   | CP2102  |
+4. **Start the App**:
+   ```bash
+   ./run_macos.sh
+   ```
 
 ---
 
-## FAQ
+### 🪟 For Windows (Legacy)
 
-Q: What YOLO versions does this support?
-A: YOLOv8 to YOLOv12, in .pt, .onnx, and .engine formats.
+1. **Setup for NVIDIA (CUDA 12.6)**:
+   - Install [CUDA 12.6](https://developer.nvidia.com/cuda-12-6-0-download-archive).
+   - Run `install_setup_cuda.bat`.
+   - Start with `run_eventuri_ai.bat`.
 
-Q: Can I use it for any game?
-A: Yes—just select the correct model and target classes for your game in the GUI.
-
-Q: Do I need NVIDIA?
-A: No, you can use DirectML (for AMD, Intel, or NVIDIA). CUDA is just faster (NVIDIA only, CUDA 12.6 required).
-
-Q: My device isn’t recognized.
-A: Only the VID:PID list above is supported by default. For other hardware, ask in the issues.
+2. **Setup for DirectML (AMD/Intel)**:
+   - Run `install_setup_directml.bat`.
+   - Start with `run_eventuri_ai.bat`.
 
 ---
 
-## Troubleshooting
+## 📖 Usage
 
-"CUDA not found": Make sure you installed CUDA 12.6, not any other version.
-
-App crashes or fails to load models: Check your model file, device drivers, and dependencies.
-
----
-
-## Credits
-
-Made with ♥ by Ahmo934 and Jealousyhaha for the MAKCU Community.
+1. **Connect your device:** Plug in your MAKCU or compatible serial device.
+2. **Launch the app:** Use `./run_macos.sh` (Mac) or the appropriate `.bat` (Windows).
+3. **Select your Model:** Choose a `.pt` or `.onnx` file from the `models/` directory in the GUI.
+4. **Configure Settings:** Set your confidence, FOV, and target classes.
+5. **Start Aimbot:** Click **START AIMBOT**, set your in-game sensitivity, and hold your activation key (default: Middle Mouse).
 
 ---
 
-Enjoy!
+## ❓ FAQ (macOS Specific)
+
+**Q: Can I use `.engine` files on Mac?**  
+A: No, `.engine` files are for NVIDIA TensorRT only. Use `.pt` or `.onnx` for Apple Silicon.
+
+**Q: Is the Debug Window supported on Mac?**  
+A: macOS restricts GUI updates on background threads. If the debug window crashes, it will be automatically disabled to keep the aimbot running. For visual feedback, we recommend using NDI to a second PC.
+
+**Q: My Mac Mini says "macOS 26 required".**  
+A: This is fixed in the Apple Silicon Edition. Ensure you ran `./setup_macos.sh` to install the correct Tcl/Tk 9.0 headers.
+
+---
+
+## 🤝 Credits
+
+- **Original Project:** Made with ♥ by Ahmo934 and Jealousyhaha for the MAKCU Community.
+- **macOS/Apple Silicon Port:** Specialized updates for M-series compatibility.
+
+---
+
+Enjoy!  
 If you need more help or want to suggest a feature, open an issue or pull request.
