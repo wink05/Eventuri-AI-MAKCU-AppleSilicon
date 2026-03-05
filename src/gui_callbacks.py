@@ -110,13 +110,24 @@ class GUICallbacks:
         self.after(200, self.poll_fps)
 
     def get_model_list(self):
-        model_files = []
-        for ext in ("pt", "onnx", "engine"):
-            model_files.extend(glob.glob(f"models/*.{ext}"))
-        return [os.path.basename(p) for p in model_files]
+        # Use config's unified listing method
+        models = config.list_models()
+        print(f"[DEBUG] Found {len(models)} models in {config.models_dir}")
+        for m in models:
+            print(f"  - {m}")
+        return models
 
     def select_model(self, val):
+        # Use an absolute path if possible or ensure it points to the root models dir
+        # If val is just a filename, join it with models/
         path = os.path.join("models", val)
+        if not os.path.isabs(path):
+            # Try to find it relative to current working directory
+            if not os.path.isfile(path):
+                # Try relative to the script's parent (root)
+                root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                path = os.path.join(root_dir, "models", val)
+
         if os.path.isfile(path):
             config.model_path = path
             self.model_name.set(os.path.basename(path))
@@ -246,10 +257,26 @@ class GUICallbacks:
     def on_debug_toggle(self):
         config.show_debug_window = self.debug_checkbox_var.get()
         if not config.show_debug_window:
-            try:
-                cv2.destroyWindow("AI Debug")
-            except Exception:
-                pass
+            # Just set the flag, let the detection thread handle window cleanup
+            # to avoid thread synchronization issues with OpenCV
+            print("[INFO] Debug window closing requested via GUI")
+        else:
+            # Start monitoring debug window status
+            self.after(1000, self._check_debug_window_status)
+        
+        # Update text info checkbox visibility
+        self._update_debug_text_info_visibility()
+
+    def on_debug_text_info_toggle(self):
+        """Toggle text information display in debug window"""
+        config.show_debug_text_info = bool(self.debug_text_info_var.get())
+        status = "enabled" if config.show_debug_text_info else "disabled"
+        print(f"[INFO] Debug text info {status}")
+        try:
+            if hasattr(config, "save") and callable(config.save):
+                config.save()
+        except Exception:
+            pass
 
     def on_input_check_toggle(self):
         if self.input_check_var.get():
@@ -287,6 +314,33 @@ class GUICallbacks:
         if hasattr(self, 'input_check_window') and self.input_check_window:
             self.input_check_window.destroy()
             self.input_check_window = None
+
+    def _update_debug_text_info_visibility(self):
+        """Show/hide text info checkbox based on debug window state"""
+        try:
+            if self.debug_checkbox_var.get():
+                # Show text info checkbox when debug window is enabled
+                self.debug_text_info_checkbox.grid()
+            else:
+                # Hide text info checkbox when debug window is disabled
+                self.debug_text_info_checkbox.grid_remove()
+        except Exception:
+            pass
+    
+    def _check_debug_window_status(self):
+        """Periodically check if debug window was closed externally"""
+        try:
+            if self.debug_checkbox_var.get() and not config.show_debug_window:
+                # Debug window was closed externally, update GUI
+                self.debug_checkbox_var.set(False)
+                print("[INFO] Debug window status synced with GUI")
+            elif self.debug_checkbox_var.get() and config.show_debug_window:
+                # Continue monitoring if debug window is still supposed to be open
+                self.after(1000, self._check_debug_window_status)
+        except Exception as e:
+            print(f"[WARN] Debug window status check error: {e}")
+            # Stop monitoring on error
+            pass
 
     def _on_input_check_close(self):
         self.input_check_var.set(False)

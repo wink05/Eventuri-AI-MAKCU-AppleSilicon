@@ -50,6 +50,93 @@ def km_version_ok(ser):
         print(f"[WARN] km_version_ok: {e}")
         return False
 
+def switch_to_4m():
+    """手動切換 MAKCU 設備到 4M baud rate"""
+    global makcu, is_connected
+    
+    if not is_connected or not makcu:
+        print("[ERROR] Device not connected. Please connect first.")
+        return False
+    
+    ports = find_com_ports()
+    port_name = None
+    for pname, dev_name in ports:
+        if dev_name == "MAKCU":
+            port_name = pname
+            break
+    
+    if not port_name:
+        print("[ERROR] MAKCU device not found.")
+        return False
+    
+    try:
+        # 關閉當前連接
+        if makcu and makcu.is_open:
+            makcu.close()
+        is_connected = False
+        time.sleep(0.1)
+        
+        # 在 115200 下發送切換命令
+        print("[INFO] Sending 4M handshake command at 115200...")
+        ser = serial.Serial(port_name, 115_200, timeout=0.3)
+        time.sleep(0.1)
+        ser.write(BAUD_CHANGE_COMMAND)
+        ser.flush()
+        ser.close()
+        time.sleep(0.15)
+        
+        # 嘗試在 4M 下連接
+        ser4m = None
+        try:
+            ser4m = serial.Serial(port_name, 4_000_000, timeout=0.3)
+            time.sleep(0.1)
+            if km_version_ok(ser4m):
+                print(f"[INFO] MAKCU handshake successful, switching to 4M on {port_name}.")
+                ser4m.close()
+                time.sleep(0.1)
+                makcu = serial.Serial(port_name, 4_000_000, timeout=0.1)
+                with makcu_lock:
+                    makcu.write(b"km.buttons(1)\r")
+                    makcu.flush()
+                is_connected = True
+                return True
+            else:
+                print("[WARN] 4M handshake failed, staying at 115200.")
+                ser4m.close()
+                time.sleep(0.1)
+                makcu = serial.Serial(port_name, 115_200, timeout=0.1)
+                with makcu_lock:
+                    makcu.write(b"km.buttons(1)\r")
+                    makcu.flush()
+                is_connected = True
+                return False
+        except Exception as e:
+            print(f"[WARN] Could not switch to 4M: {e}")
+            if ser4m:
+                try:
+                    ser4m.close()
+                except:
+                    pass
+            time.sleep(0.1)
+            makcu = serial.Serial(port_name, 115_200, timeout=0.1)
+            with makcu_lock:
+                makcu.write(b"km.buttons(1)\r")
+                makcu.flush()
+            is_connected = True
+            return False
+    except Exception as e:
+        print(f"[ERROR] Failed to switch to 4M: {e}")
+        # 嘗試恢復連接
+        try:
+            makcu = serial.Serial(port_name, 115_200, timeout=0.1)
+            with makcu_lock:
+                makcu.write(b"km.buttons(1)\r")
+                makcu.flush()
+            is_connected = True
+        except:
+            pass
+        return False
+
 def connect_to_makcu():
     global makcu, is_connected
     ports = find_com_ports()
@@ -66,61 +153,16 @@ def connect_to_makcu():
                     ser = serial.Serial(port_name, baud, timeout=0.3)
                     time.sleep(0.1)
                     if km_version_ok(ser):
-                        if baud == 115_200:
-                            print("[INFO] MAKCU responded at 115200, sending 4M handshake...")
-                            ser.write(BAUD_CHANGE_COMMAND)
-                            ser.flush()
-                            ser.close()
-                            time.sleep(0.15)
-                            # --- Always cleanup before opening new connection! ---
-                            ser4m = None
-                            try:
-                                ser4m = serial.Serial(port_name, 4_000_000, timeout=0.3)
-                                time.sleep(0.1)
-                                if km_version_ok(ser4m):
-                                    print(f"[INFO] MAKCU handshake successful, switching to 4M on {port_name}.")
-                                    ser4m.close()
-                                    time.sleep(0.1)
-                                    makcu = serial.Serial(port_name, 4_000_000, timeout=0.1)
-                                    with makcu_lock:
-                                        makcu.write(b"km.buttons(1)\r")
-                                        makcu.flush()
-                                    is_connected = True
-                                    return True
-                                else:
-                                    print("[WARN] 4M handshake failed, staying at 115200.")
-                                    ser4m.close()
-                                    time.sleep(0.1)
-                                    makcu = serial.Serial(port_name, 115_200, timeout=0.1)
-                                    with makcu_lock:
-                                        makcu.write(b"km.buttons(1)\r")
-                                        makcu.flush()
-                                    is_connected = True
-                                    return True
-                            except Exception as e:
-                                print(f"[WARN] Could not switch to 4M: {e}")
-                                if ser4m:
-                                    try:
-                                        ser4m.close()
-                                    except:
-                                        pass
-                                time.sleep(0.1)
-                                makcu = serial.Serial(port_name, 115_200, timeout=0.1)
-                                with makcu_lock:
-                                    makcu.write(b"km.buttons(1)\r")
-                                    makcu.flush()
-                                is_connected = True
-                                return True
-                        else:
-                            print(f"[INFO] MAKCU responded at {baud}, using it.")
-                            ser.close()
-                            time.sleep(0.1)
-                            makcu = serial.Serial(port_name, baud, timeout=0.1)
-                            with makcu_lock:
-                                makcu.write(b"km.buttons(1)\r")
-                                makcu.flush()
-                            is_connected = True
-                            return True
+                        # 不再自動切換到 4M，直接使用檢測到的 baud rate
+                        print(f"[INFO] MAKCU responded at {baud}, using it.")
+                        ser.close()
+                        time.sleep(0.1)
+                        makcu = serial.Serial(port_name, baud, timeout=0.1)
+                        with makcu_lock:
+                            makcu.write(b"km.buttons(1)\r")
+                            makcu.flush()
+                        is_connected = True
+                        return True
                     ser.close()
                     time.sleep(0.1)
                 except Exception as e:

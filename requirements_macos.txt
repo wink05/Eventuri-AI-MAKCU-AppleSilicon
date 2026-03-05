@@ -1,0 +1,14 @@
+# Core dependencies
+torch
+torchvision
+torchaudio
+ultralytics
+customtkinter
+opencv-python
+pyserial
+mss
+onnx
+onnxruntime
+cyndilib
+# mps-specific
+# coremltools # Optional, for better ONNX performance on Mac
